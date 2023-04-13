@@ -5,4 +5,5 @@ import datetime
 import os
 
 test_environ = os.environ["TEST_ENV"]
-print "Cron job has run at %s with environment variable '%s'" %(datetime.datetime.now(), test_environ)
+print("Cron job has run at %s with environment variable '%s'" %
+      (datetime.datetime.now(), test_environ))
