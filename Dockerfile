@@ -2,20 +2,23 @@
 FROM arm64v8/debian:stable
 
 USER root
-WORKDIR /app
-
 
 # Set environment variables.
 ENV HOME /root
 ENV TEST_ENV test-value
 ENV RUNNING_IN_DOCKER_CONTAINER True
+ENV LOGFILE /var/log/test.log
+ENV WORKING_DIR /app
+# cannot use ENV variables in RUN commands, so 
+# can't parameterize things like the non-root username
+
+WORKDIR ${WORKING_DIR}
 
 # Set the time zone to US Eastern, ignore host time zone
 RUN echo "America/New_York" > /etc/timezone && \
     dpkg-reconfigure --frontend noninteractive tzdata
 
 # Dependencies Debian version, clean up APT cache afterward
-# WARNING: PYTHON IS OLD VERSION, COULD CAUSE ISSUES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 RUN apt-get update                                && \
     apt-get install -y --no-install-recommends \
     software-properties-common=0.96.20.2-2.1   \
@@ -29,11 +32,6 @@ RUN apt-get update                                && \
     apt-get autoremove -y                         && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-
-# Install Python Setuptools
-# POTENTIAL FUTURE PROBLEM, OLD PYTHON VERSION: 2.7.18 is default python
-# RUN apt-get install -y --no-install-recommends apt-get install python3=3.9.2-3 python-is-python3
-
 # DON'T REMOVE THIS IN CASE IT CAUSES AN ISSUE
 # RUN apt-get purge -y software-properties-common
 
@@ -41,13 +39,13 @@ RUN apt-get update                                && \
 RUN useradd -ms /bin/bash dockeruser
 
 # set ownership of directories and files before copying new ones over
-RUN touch /var/log/test.log && \
-    chmod 777 /var/log/test.log && \
-    chown -R dockeruser /app /var/log/test.log
+RUN touch ${LOGFILE} && \
+    chmod 777 ${LOGFILE} && \
+    chown -R dockeruser ${WORKING_DIR} ${LOGFILE}
 
 # Copy over files and set permissions
 # TODO: CHANGE OWNER
-COPY --chown=dockeruser --chmod=0744 ["*.py", "*.txt", "/app/"]
+COPY --chown=dockeruser --chmod=0744 ["*.py", "*.txt", "${WORKING_DIR}/"]
 # Install pip dependencies
 RUN pip3 install --no-cache-dir --no-cache --upgrade -r requirements.txt
 
@@ -55,7 +53,7 @@ RUN pip3 install --no-cache-dir --no-cache --upgrade -r requirements.txt
 COPY --chown=root       --chmod=0644 ["cron-python", "/etc/cron.d/"]
 # install the crontab
 # mark log as global writable, install crontab for user
-RUN  /usr/bin/crontab -u dockeruser /etc/cron.d/cron-python
+RUN /usr/bin/crontab -u dockeruser /etc/cron.d/cron-python
 
 
 # start the cron service
