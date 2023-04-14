@@ -3,4 +3,4 @@
 
 TEST_ENV=XXXXXXX
 #
-* * * * * root python /test.py >> /var/log/test.log
+* * * * * dockeruser python /app/test.py >> /var/log/test.log

@@ -1,6 +1,10 @@
 # CHANGED: to use an image that works on Apple M1 chips
 FROM arm64v8/debian:stable
 
+USER root
+WORKDIR /app
+
+
 # Set environment variables.
 ENV HOME /root
 ENV TEST_ENV test-value
@@ -20,10 +24,11 @@ RUN apt-get update                                && \
     ffmpeg=7:4.3.5-0+deb11u1                   \
     curl=7.74.0-1.3+deb11u7                    \
     screen=4.8.0-6                             \
-    python                                        && \
+    python3=3.9.2-3 python-is-python3 python3-pip && \
     apt-get clean -y && apt-get autoclean -y      && \
     apt-get autoremove -y                         && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 
 # Install Python Setuptools
 # POTENTIAL FUTURE PROBLEM, OLD PYTHON VERSION: 2.7.18 is default python
@@ -35,10 +40,23 @@ RUN apt-get update                                && \
 # Python:3.11 (Debian) version:
 RUN useradd -ms /bin/bash dockeruser
 
+# set ownership of directories and files before copying new ones over
+RUN touch /var/log/test.log && \
+    chmod 777 /var/log/test.log && \
+    chown -R dockeruser /app /var/log/test.log
+
 # Copy over files and set permissions
 # TODO: CHANGE OWNER
-COPY --chmod=0744 ["test.py", "run-cron.py", "/"]
-COPY --chown=root --chmod=0644 ["cron-python", "/etc/cron.d/"]
+COPY --chown=dockeruser --chmod=0744 ["*.py", "*.txt", "/app/"]
+# Install pip dependencies
+RUN pip3 install --no-cache-dir --no-cache --upgrade -r requirements.txt
+
+
+COPY --chown=root       --chmod=0644 ["cron-python", "/etc/cron.d/"]
+# install the crontab
+# mark log as global writable, install crontab for user
+RUN  /usr/bin/crontab -u dockeruser /etc/cron.d/cron-python
+
 
 # start the cron service
-CMD ["/run-cron.py"]
+CMD ["/app/run-cron.py"]
