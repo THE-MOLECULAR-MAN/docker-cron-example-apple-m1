@@ -2,23 +2,16 @@
 # Build, run, and attach to Dockerfile in current directory
 set +e
 
-
-# export DOCKER_REPO_NAME="docker-cron-example"
-
 # set the repo name as the current directory's name
 export DOCKER_REPO_NAME=${PWD##*/}
 
 ##############################################################################
 #		FUNCTION DEFINITIONS
 ##############################################################################
-THIS_SCRIPT_NAME="build_docker"
-
-friendlier_date () {
-	date +"%Y-%m-%d %I:%M:%S %p %Z"
-}
-
+# OSX and Linux friendly version, but it keeps the filename suffix
+THIS_SCRIPT_NAME="$(basename $0)"
 log () {
-    echo -e "[$THIS_SCRIPT_NAME] $(friendlier_date)\t $*"
+    echo -e "[$THIS_SCRIPT_NAME] $(date +"%Y-%m-%d %I:%M:%S %p %Z")\t $*"
 }
 
 ##############################################################################
