@@ -33,16 +33,18 @@ RUN echo "America/New_York" > /etc/timezone && \
     dpkg-reconfigure --frontend noninteractive tzdata
 
 # Install APT dependencies - Debian version, clean up APT cache afterward
+    # software-properties-common=0.96.20.2-2.1   \
+    # ffmpeg=7:4.3.5-0+deb11u1                   \
+
 RUN apt-get update                                && \
     apt-get install -y --no-install-recommends \
-    software-properties-common=0.96.20.2-2.1   \
     procps=2:3.3.17-5                          \
     cron=3.0pl1-137                            \
-    ffmpeg=7:4.3.5-0+deb11u1                   \
-    curl=7.74.0-1.3+deb11u7                    \
-    screen=4.8.0-6                             \
     python3=3.9.2-3                            \
     python-is-python3=3.9.2-1                  \
+    vim=2:8.2.2434-3+deb11u1                   \
+    curl=7.74.0-1.3+deb11u7                    \
+    screen=4.8.0-6                             \
     python3-pip=20.3.4-4+deb11u1                  && \
     apt-get clean -y && apt-get autoclean -y      && \
     apt-get autoremove -y                         && \
