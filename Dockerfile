@@ -1,6 +1,8 @@
 # Hardcoded for Apple M1 chips - arm64v8/debian:stable
 FROM arm64v8/debian:stable
 
+# LABEL version=“0.1.0”
+
 # set the user as root (temporarily)
 USER root
 
@@ -12,9 +14,13 @@ USER root
 ENV HOME /root
 ENV TEST_ENV test-value
 ENV RUNNING_IN_DOCKER_CONTAINER True
+
+# all 3 of these are hardcoded in cron-python
 ENV LOGFILE /var/log/test.log
 ENV WORKING_DIR /app
 ENV NONROOT_USERNAME dockeruser
+
+# warning: this is hardcoded in run-cron.py
 ENV CRONJOB_FILENAME cron-python
 
 # set the working directory
@@ -55,8 +61,8 @@ RUN touch ${LOGFILE} && \
     chown -R ${NONROOT_USERNAME} ${WORKING_DIR} ${LOGFILE}
 
 # Copy over files and set permissions
-# TODO: CHANGE OWNER
-COPY --chown=${NONROOT_USERNAME} --chmod=0744 ["*.py", "*.txt", "${WORKING_DIR}/"]
+# using *.env to avoid errors since the '.env' file may or may not exist
+COPY --chown=${NONROOT_USERNAME} --chmod=0744 ["*.txt", "*.env", "*.py", "*.sh", "${WORKING_DIR}/"]
 
 # Install pip dependencies
 RUN pip3 install --no-cache-dir --no-cache --upgrade -r requirements.txt
