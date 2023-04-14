@@ -1,4 +1,4 @@
 # PIP packages with versions
 pip >= 23.0.1
 setuptools >= 67.6.0
-yt-dlp == 2023.03.04
+# yt-dlp == 2023.03.04
